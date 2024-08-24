@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import "./App.css";
 
 // Lazy load components
+const Feedback = lazy(()=> import('./components/FeedbackCompo/Feedback'))
 const SignUp = lazy(() => import("./components/LoginComponent/Signup"));
 const SignIn = lazy(() => import("./components/LoginComponent/Signin"));
 const HomePage = lazy(() => import("./components/HomeComponent/HomePageComponent"));
@@ -29,6 +30,7 @@ function App() {
           <Route path="/newEvent" element={<CreateNewEvent />} />
           <Route path="/editEvent" element={<EditEvent />} />
           <Route path="/registrationForm" element={<Registration />} />
+          <Route path="/feedback" element={<Feedback/>}/>
         </Routes>
       </Suspense>
     </>

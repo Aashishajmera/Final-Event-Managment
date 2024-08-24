@@ -1,10 +1,15 @@
-import React, { useState, useEffect, lazy, Suspense } from "react";
 import axios from "axios";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 // Lazy load components
-const HeaderComponent = lazy(() => import("../HeaderComponent/HeaderComponent"));
-const FooterComponent = lazy(() => import("../FooterComponent/FooterComponent"));
+const HeaderComponent = lazy(() =>
+  import("../HeaderComponent/HeaderComponent")
+);
+const FooterComponent = lazy(() =>
+  import("../FooterComponent/FooterComponent")
+);
 
 export default function AllEventList() {
   const alleventURL = process.env.REACT_APP_ALLEVENT_URL;
@@ -21,6 +26,32 @@ export default function AllEventList() {
   const user = sessionStorage.getItem("user");
   const jsObjectUser = JSON.parse(user);
   const userId = jsObjectUser._id;
+
+  //   for check the event event is complete or not
+
+// Example function to handle feedback and show alert
+const feedbackFun = async (_id) => {
+  try {
+    const response = await axios.post('http://localhost:3000/event/checkEventComplete', { _id });
+    
+    if (response.status === 201) {
+      // Show SweetAlert message for status code 201
+      Swal.fire({
+        icon: 'info',
+        title: 'Event Not Complete',
+        text: 'The event is not complete yet. You are not able to give feedback at this moment.',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6'
+      });
+    } else {
+        navigate('/feedback', {state: {_id}})
+    }
+  } catch (error) {
+    console.log("Error occurred while checking event completion:", error);
+  }
+};
+
+  
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -115,13 +146,17 @@ export default function AllEventList() {
                 <td>
                   {registeredEvents[event._id] ? (
                     <>
-                      <button className="ms-2 btn-success btn">
+                      <button
+                        onClick={() => {
+                          feedbackFun(event._id);
+                        }}
+                        className="ms-2 btn-success btn">
                         feedback
                       </button>
                     </>
                   ) : (
                     <button
-                    style={{
+                      style={{
                         backgroundColor: "rgb(0, 156, 167)",
                         color: "white",
                       }}

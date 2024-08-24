@@ -5,12 +5,16 @@ import { useNavigate } from "react-router-dom";
 import "./OurEvent.css";
 
 // Lazy load external components
-const FooterComponent = lazy(() => import("../FooterComponent/FooterComponent"));
-const HeaderComponent = lazy(() => import("../HeaderComponent/HeaderComponent"));
+const FooterComponent = lazy(() =>
+  import("../FooterComponent/FooterComponent")
+);
+const HeaderComponent = lazy(() =>
+  import("../HeaderComponent/HeaderComponent")
+);
 
 export default function OurEventComponent() {
   // URL LINK OF OUREVENT
-  const ourEventURL = process.env.REACT_APP_OUREVENT_URL;
+//   const ourEventURL = process.env.REACT_APP_OUREVENT_URL;
   const deleteEventURL = process.env.REACT_APP_DELETEEVENT_URL;
 
   const [events, setEvents] = useState([]);
@@ -23,6 +27,27 @@ export default function OurEventComponent() {
   function newEvent() {
     navigate("/newEvent");
   }
+
+  // function for working work
+  const workingFun = () => {
+     Swal.fire({
+      title: "Work in Progress",
+      text: 'We are currently working on this. Please check back later.',
+      icon: "info",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    setTimeout(() => {
+        Swal.close();
+    }, 1000);
+     
+  };
 
   // Function to delete an event
   const deleteEvent = (event) => {
@@ -101,7 +126,7 @@ export default function OurEventComponent() {
 
     const fetchEvents = async () => {
       try {
-        const response = await axios.post(ourEventURL, { userId });
+        const response = await axios.post(process.env.REACT_APP_OUREVENT_URL, { userId });
         if (!response.data.allEvents || response.data.allEvents.length === 0) {
           Swal.fire({
             icon: "info",
@@ -119,7 +144,7 @@ export default function OurEventComponent() {
       }
     };
     fetchEvents();
-  }, []);
+  },[]);
 
   const formatDate = (isoDate) => {
     if (!isoDate) return "N/A";
@@ -196,6 +221,9 @@ export default function OurEventComponent() {
                 <th scope="col">Capacity</th>
                 <th scope="col">Edit</th>
                 <th scope="col">Delete</th>
+                <th scope="col" colSpan="2">
+                  Details
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -222,6 +250,20 @@ export default function OurEventComponent() {
                       className="btn btn-outline-danger btn-sm"
                       onClick={() => deleteEvent(event)}>
                       Delete
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      onClick={() => {
+                        workingFun();
+                      }}
+                      className="btn btn-info btn-sm ps-2 pe-2">
+                      View
+                    </button>
+                  </td>
+                  <td>
+                    <button className="btn btn-success btn-sm ps-2 pe-2">
+                      Feedback
                     </button>
                   </td>
                 </tr>

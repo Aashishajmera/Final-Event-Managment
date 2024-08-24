@@ -1,8 +1,8 @@
+import dotenv from "dotenv";
 import { validationResult } from "express-validator";
-import { EventModel } from "../model/Event.Model.js";
-import nodemailer from "nodemailer";
-import dotenv from 'dotenv';
 import mongoose from "mongoose";
+import nodemailer from "nodemailer";
+import { EventModel } from "../model/Event.Model.js";
 import { UserEventDetailsModel } from "../model/UserEventDetails.Model.js";
 
 // for using dotenv file
@@ -95,7 +95,7 @@ export const deleteEvent = async (req, res, next) => {
     const eventDetails = await EventModel.findById({ _id });
 
     if (!eventDetails) {
-        return res.status(404).json({ msg: "Event not found" });
+      return res.status(404).json({ msg: "Event not found" });
     }
 
     // ============================== for check the event ======================================
@@ -119,7 +119,9 @@ export const deleteEvent = async (req, res, next) => {
         text: `
 Dear ${user.username},
 
-We regret to inform you that the "${eventDetails.title}" event, originally scheduled for:
+We regret to inform you that the "${
+          eventDetails.title
+        }" event, originally scheduled for:
 
   - **Date:** ${new Date(eventDetails.date).toDateString()}
   - **Time:** ${eventDetails.time}
@@ -145,19 +147,15 @@ Event Management Team`,
 
     if (deleteOneEvent.deletedCount > 0) {
       if (userListInEvent.length != 0) {
-        return res
-          .status(200)
-          .json({
-            msg: "Event successfully deleted and send mail all the user",
-            deleteOneEvent,
-          });
+        return res.status(200).json({
+          msg: "Event successfully deleted and send mail all the user",
+          deleteOneEvent,
+        });
       } else {
-        return res
-          .status(200)
-          .json({
-            msg: "Event successfully deleted and no any user for this event",
-            deleteOneEvent,
-          });
+        return res.status(200).json({
+          msg: "Event successfully deleted and no any user for this event",
+          deleteOneEvent,
+        });
       }
     } else {
       return res.status(404).json({ msg: "Event not found" });
@@ -259,3 +257,69 @@ Event Management Team`,
     return res.status(500).json({ msg: "Internal server error" });
   }
 };
+
+// CHECK EVENT COMPLETE OR NOT
+export const checkEventComplete = async (req, res, next) => {
+  try {
+    console.log("I am call");
+    const { _id } = req.body; // Extract event ID from the request body
+    const eventDetails = await UserEventDetailsModel.find({
+      eventId: _id,
+    }).populate("eventId"); // Fetch event details from the database
+
+    if (!eventDetails || eventDetails.length === 0) {
+      return res.status(404).json({ msg: "Event not found" });
+    }
+
+
+    // Get event date and time from the database as Date object
+    const eventDateObj = new Date(eventDetails[0].eventId.date); // Assuming this is a Date object
+    const eventTime = eventDetails[0].eventId.time; // Assume it's in 'hh:mm AM/PM' format
+
+    // Get current date and time
+    const currentDate = new Date();
+    const currentDateString = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD format
+    const currentTimeString = convertTo12HourFormat(currentDate); // Convert current time to 12-hour format with AM/PM
+
+    // Format the event date to a string for comparison
+    const eventDateString = eventDateObj.toISOString().split("T")[0]; // Get YYYY-MM-DD format
+
+    console.log('currentdata', currentDateString, currentTimeString, 'database', eventDateString, eventTime);
+
+    // Compare the dates
+    if (currentDateString > eventDateString) {
+      // If the current date is greater than the event date, the event is complete
+      return res.status(200).json({ msg: "Event is complete", eventDetails });
+    } else if (currentDateString === eventDateString) {
+      // If dates are the same, compare the times
+      if (isCurrentTimeAfter(eventTime, currentTimeString)) {
+        return res.status(200).json({ msg: "Event is complete", eventDetails });
+      } else {
+        return res.status(200).json({ msg: "Event is not complete", eventDetails });
+      }
+    } else {
+      // If the current date is less than the event date, the event is not complete
+      return res.status(201).json({ msg: "Event is not complete", eventDetails });
+    }
+  } catch (error) {
+    return res.status(501).json({ msg: "Internal server error", error });
+  }
+};
+
+// Helper function to convert a Date object to a 12-hour format with AM/PM
+function convertTo12HourFormat(date) {
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+  return `${hours}:${minutesStr} ${ampm}`;
+}
+
+// Helper function to compare two times in 'hh:mm AM/PM' format
+function isCurrentTimeAfter(eventTime, currentTime) {
+  const eventDate = new Date(`1970-01-01 ${eventTime}`);
+  const currentDate = new Date(`1970-01-01 ${currentTime}`);
+  return currentDate >= eventDate;
+}
