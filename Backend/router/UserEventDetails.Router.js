@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { RegistrationForEvent } from '../controller/UserEventDetails.Controller.js';
+import { checkUserRegistration, RegistrationForEvent } from '../controller/UserEventDetails.Controller.js';
 import { check } from 'express-validator';
 
 
@@ -21,3 +21,5 @@ const registrationValidation = [
 ];
 
 userEventDetailsRouter.post(process.env.USER_REGISTRATION, registrationValidation, RegistrationForEvent);
+
+userEventDetailsRouter.post(process.env.CHECK_REGISTRATION, checkUserRegistration);

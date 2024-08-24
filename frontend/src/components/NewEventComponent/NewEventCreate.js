@@ -1,16 +1,22 @@
-import { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import Swal from "sweetalert2";
-import FooterComponent from "../FooterComponent/FooterComponent";
-import HeaderComponent from "../HeaderComponent/HeaderComponent";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+// Lazy load external components
+const FooterComponent = lazy(() => import("../FooterComponent/FooterComponent"));
+const HeaderComponent = lazy(() => import("../HeaderComponent/HeaderComponent"));
+
 export default function CreateNewEvent() {
+    // URL for creating a new event from environment variables
+    const newEventURL = process.env.REACT_APP_NEWEVENT_URL;
+
+    // State variables for form input and errors
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [date, setDate] = useState("");
-    const [time24, setTime24] = useState(''); // 24-hour time for input field
-    const [time12, setTime12] = useState(''); // 12-hour time for display
+    const [time24, setTime24] = useState("");
+    const [time12, setTime12] = useState("");
     const [location, setLocation] = useState("");
     const [capacity, setCapacity] = useState("");
 
@@ -21,15 +27,14 @@ export default function CreateNewEvent() {
     const [locationErr, setLocationErr] = useState("");
     const [capacityErr, setCapacityErr] = useState("");
 
-
     const navigate = useNavigate();
 
     // Validation functions
     const validateTitle = (value) => {
         if (!value) {
             setTitleErr("Title is required");
-        } else if (!value.match("^[a-zA-Z]+$")) {
-            setTitleErr("Title can contain only alphabet characters");
+        } else if (!/^[a-zA-Z\s]+$/.test(value)) {
+            setTitleErr("Title can contain only alphabet characters and spaces");
         } else if (value.length < 5 || value.length > 50) {
             setTitleErr("Title must be between 5 and 50 characters long");
         } else {
@@ -57,12 +62,9 @@ export default function CreateNewEvent() {
     };
 
     const validateTime = (value) => {
-        // Check if the value is empty
         if (!value) {
             setTimeErr("Time is required");
-        }
-        // Check if the time is in the correct 12-hour format with uppercase AM/PM
-        else if (!/^([01]?[0-9]|2[0-3]):([0-5][0-9])\s?(AM|PM)$/.test(value)) {
+        } else if (!/^([01]?[0-9]|2[0-3]):([0-5][0-9])\s?(AM|PM)$/.test(value)) {
             setTimeErr("Time must be in hh:mm AM/PM format with AM/PM in uppercase");
         } else {
             setTimeErr("");
@@ -87,7 +89,7 @@ export default function CreateNewEvent() {
         }
     };
 
-    // Handlers for input changes
+    // Event handlers
     const handleTitleChange = (e) => {
         const value = e.target.value;
         setTitle(value);
@@ -105,27 +107,21 @@ export default function CreateNewEvent() {
         setDate(value);
         validateDate(value);
     };
-    //    =============================================================
 
-    // Function to convert 24-hour time to 12-hour time with AM/PM
     const convertTo12HourFormat = (time24) => {
         const [hours, minutes] = time24.split(':').map(Number);
         const period = hours >= 12 ? 'PM' : 'AM';
-        const adjustedHours = hours % 12 || 12; // Convert 0 hours to 12
+        const adjustedHours = hours % 12 || 12;
         return `${String(adjustedHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
     };
 
-
     const handleTimeChange = (e) => {
-        const value24Hour = e.target.value; // Time in 24-hour format (e.g., "13:00")
-        const value12Hour = convertTo12HourFormat(value24Hour); // Convert to 12-hour format (e.g., "01:00 PM")
-        setTime24(value24Hour); // Update 24-hour time state
-        setTime12(value12Hour); // Update 12-hour formatted time state for display
-        validateTime(time12)
+        const value24Hour = e.target.value;
+        const value12Hour = convertTo12HourFormat(value24Hour);
+        setTime24(value24Hour);
+        setTime12(value12Hour);
+        validateTime(value12Hour);
     };
-
-    //    =============================================================
-
 
     const handleLocationChange = (e) => {
         const value = e.target.value;
@@ -139,31 +135,22 @@ export default function CreateNewEvent() {
         validateCapacity(value);
     };
 
+    // Get the user id from session storage
     let userId = sessionStorage.getItem("user");
     userId = JSON.parse(userId)._id;
 
     // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Run all validations before submission
         validateTitle(title);
-        validateTime(time12)
+        validateTime(time12);
         validateDescription(description);
         validateDate(date);
         validateLocation(location);
         validateCapacity(capacity);
 
-        // Check if there are any errors
-        if (
-            titleErr ||
-            descriptionErr ||
-            dateErr ||
-            timeErr ||
-            locationErr ||
-            capacityErr
-        ) {
-            // Show SweetAlert with error message
+        // Check for errors before submitting
+        if (titleErr || descriptionErr || dateErr || timeErr || locationErr || capacityErr) {
             await Swal.fire({
                 icon: "error",
                 title: "Validation Error",
@@ -172,31 +159,22 @@ export default function CreateNewEvent() {
             return;
         }
 
+        // Submit the form data
         try {
-            const response = await axios.post(
-                "http://localhost:3000/event/addevent",
-                {
-                    title: title,
-                    description: description,
-                    date: date,
-                    time: time12,
-                    location: location,
-                    capacity: capacity,
-                    userId: userId,
-                }
-            );
+            const response = await axios.post(newEventURL, {
+                title, description, date, time: time12, location, capacity, userId
+            });
 
-            // Show SweetAlert success message
             if (response.status === 201) {
                 await Swal.fire({
                     icon: "success",
                     title: "Success!",
                     text: "Event created successfully.",
-                })
+                });
                 navigate('/ourEvent');
             }
 
-            // Reset form fields
+            // Clear form fields
             setTitle("");
             setDescription("");
             setDate("");
@@ -204,7 +182,6 @@ export default function CreateNewEvent() {
             setCapacity("");
         } catch (error) {
             console.log(error);
-            // Show SweetAlert error message
             await Swal.fire({
                 icon: "error",
                 title: "Submission Error",
@@ -215,35 +192,23 @@ export default function CreateNewEvent() {
 
     return (
         <>
-            <HeaderComponent />
+            <Suspense fallback={<div>Loading...</div>}>
+                <HeaderComponent />
+            </Suspense>
             <div className="container border p-3 mt-4 mb-4 border-secondary rounded">
                 <h2 className="text-center mb-4">Create Event</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="row mb-3">
                         <div className="col-md-6 mb-3">
                             <div className="form-floating">
-                                <input
-                                    type="text"
-                                    value={title}
-                                    onChange={handleTitleChange}
-                                    className="form-control"
-                                    id="title"
-                                    placeholder="Event Title"
-                                />
+                                <input type="text" value={title} onChange={handleTitleChange} className="form-control" id="title" placeholder="Event Title" />
                                 <small className="text-danger fs-7">{titleErr}</small>
                                 <label htmlFor="title">Title</label>
                             </div>
                         </div>
                         <div className="col-md-6">
                             <div className="form-floating">
-                                <input
-                                    type="text"
-                                    value={description}
-                                    onChange={handleDescriptionChange}
-                                    className="form-control"
-                                    id="description"
-                                    placeholder="Event Description"
-                                />
+                                <input type="text" value={description} onChange={handleDescriptionChange} className="form-control" id="description" placeholder="Event Description" />
                                 <small className="text-danger fs-7">{descriptionErr}</small>
                                 <label htmlFor="description">Description</label>
                             </div>
@@ -252,29 +217,14 @@ export default function CreateNewEvent() {
                     <div className="row mb-3">
                         <div className="col-md-6 mb-3">
                             <div className="form-floating">
-                                <input
-                                    type="date"
-                                    value={date}
-                                    onChange={handleDateChange}
-                                    className="form-control"
-                                    id="date"
-                                    placeholder="Event Date"
-                                    min={new Date().toISOString().split("T")[0]} // Prevent past dates
-                                />
+                                <input type="date" value={date} onChange={handleDateChange} className="form-control" id="date" placeholder="Event Date" min={new Date().toISOString().split("T")[0]} />
                                 <small className="text-danger fs-7">{dateErr}</small>
                                 <label htmlFor="date">Date</label>
                             </div>
                         </div>
                         <div className="col-md-6">
                             <div className="form-floating">
-                                <input
-                                    type="time"
-                                    value={time24}
-                                    onChange={handleTimeChange}
-                                    className="form-control"
-                                    id="time"
-                                    placeholder="Event Time (hh:mm AM/PM)"
-                                />
+                                <input type="time" value={time24} onChange={handleTimeChange} className="form-control" id="time" placeholder="Event Time (hh:mm AM/PM)" />
                                 <small className="text-danger fs-7">{timeErr}</small>
                                 <label htmlFor="time">Time</label>
                             </div>
@@ -283,43 +233,32 @@ export default function CreateNewEvent() {
                     <div className="row mb-3">
                         <div className="col-md-6 mb-3">
                             <div className="form-floating">
-                                <input
-                                    type="text"
-                                    value={location}
-                                    onChange={handleLocationChange}
-                                    className="form-control"
-                                    id="location"
-                                    placeholder="Event Location"
-                                />
+                                <input type="text" value={location} onChange={handleLocationChange} className="form-control" id="location" placeholder="Event Location" />
                                 <small className="text-danger fs-7">{locationErr}</small>
                                 <label htmlFor="location">Location</label>
                             </div>
                         </div>
                         <div className="col-md-6">
                             <div className="form-floating">
-                                <input
-                                    type="number"
-                                    value={capacity}
-                                    onChange={handleCapacityChange}
-                                    className="form-control"
-                                    id="capacity"
-                                    placeholder="Event Capacity"
-                                />
+                                <input type="number" value={capacity} onChange={handleCapacityChange} className="form-control" id="capacity" placeholder="Event Capacity" />
                                 <small className="text-danger fs-7">{capacityErr}</small>
                                 <label htmlFor="capacity">Capacity</label>
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <button style={{
-                            backgroundColor: 'rgb(0, 156, 167)', color: 'white'
-                        }} type="submit" className="btn ">
+                    <div className="">
+                        <button style={{ backgroundColor: 'rgb(0, 156, 167)', color: 'white', fontSize: '16px' }} type="submit" className="btn">
                             Create Event
+                        </button>
+                        <button type="button" onClick={() => { navigate(-1); }} className="btn btn-outline-secondary ms-2 ps-4 pe-4" style={{ fontSize: '16px' }}>
+                            Back
                         </button>
                     </div>
                 </form>
             </div>
-            <FooterComponent />
+            <Suspense fallback={<div>Loading...</div>}>
+                <FooterComponent />
+            </Suspense>
         </>
     );
 }

@@ -1,0 +1,11 @@
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .spinner-message {
+    margin-left: 10px;
+  }
+  

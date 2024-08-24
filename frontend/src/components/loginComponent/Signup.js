@@ -6,6 +6,11 @@ import "./Signup.css";
 import '@fortawesome/fontawesome-free/css/all.min.css'; // Import Font Awesome
 
 export default function SignUp() {
+
+  // GET A URL OF SIGNUP 
+  const signupURL = process.env.REACT_APP_SIGNUP_URL;
+
+
   const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,17 +22,20 @@ export default function SignUp() {
 
   const navigate = useNavigate();
 
-  // Validation functions
-  const validateUserName = (value) => {
-    const alphabeticPattern = /^[A-Za-z]+$/;
-    if (!value.trim()) {
-      setUserNameErr("Username is required");
-    } else if (!alphabeticPattern.test(value)) {
-      setUserNameErr("Username must be alphabetic");
-    } else {
-      setUserNameErr("");
-    }
-  };
+// Validation functions
+const validateUserName = (value) => {
+  // This pattern allows alphabetic characters and a single space between words
+  const alphabeticPattern = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+
+  if (!value.trim()) {
+    setUserNameErr("Username is required");
+  } else if (!alphabeticPattern.test(value)) {
+    setUserNameErr("Username must contain only alphabetic characters");
+  } else {
+    setUserNameErr("");
+  }
+};
+
 
   const validateEmail = (value) => {
     const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
@@ -89,8 +97,7 @@ export default function SignUp() {
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/user/usersignup",
+      const response = await axios.post(signupURL,
         {
           userName: userName,
           email: email,

@@ -8,6 +8,11 @@ import './Signup.css';
 import '@fortawesome/fontawesome-free/css/all.min.css'; // Import Font Awesome
 
 export default function SignIn() {
+
+  // FOR GETTING THE URL 
+  const signinURL = process.env.REACT_APP_SIGNIN_URL;
+
+
   // State for form fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -74,7 +79,7 @@ export default function SignIn() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/user/usersignin",
+        signinURL,
         { email, password }
       );
 

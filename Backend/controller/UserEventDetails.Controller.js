@@ -72,3 +72,28 @@ Event Managment Team`,
     }
 };
 
+export const checkUserRegistration = async (req, res) => {
+    try {
+      const { userId, eventId } = req.body;
+  
+      // Check if both userId and eventId are provided
+      if (!userId || !eventId) {
+        return res.status(400).json({ message: 'userId and eventId are required' });
+      }
+  
+      // Find a document where both userId and eventId match
+      const userEvent = await UserEventDetailsModel.findOne({ userId: userId, eventId: eventId });
+  
+      // If a match is found, return that the user is already registered
+      if (userEvent) {
+        return res.status(200).json({ message: 'User is already registered for this event' });
+      }
+  
+      // If no match is found, return that no user is registered
+      return res.status(201).json({ message: 'No user registered for this event' });
+    } catch (error) {
+      // Handle any errors that occur during the database query
+      console.error('Error checking user registration:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  };

@@ -1,31 +1,36 @@
-import "./App.css";
+import React, { Suspense, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
-import SignUp from "./components/LoginComponent/Signup";
-import SignIn from "./components/LoginComponent/Signin";
-import HomePage from "./components/HomeComponent/HomePageComponent";
-import HeaderComponent from "./components/HeaderComponent/HeaderComponent";
-import FooterComponent from "./components/FooterComponent/FooterComponent";
-import AllEventList from "./components/EventListComponent/AllEventList";
-import OurEventComponent from "./components/OurEventComponent/OurEvent";
-import CreateNewEvent from "./components/NewEventComponent/NewEventCreate";
-import EditEvent from "./components/EditComponent/EditEvent";
-import Registration from "./components/RegistrationComponent/Registration";
+import "./App.css";
+
+// Lazy load components
+const SignUp = lazy(() => import("./components/LoginComponent/Signup"));
+const SignIn = lazy(() => import("./components/LoginComponent/Signin"));
+const HomePage = lazy(() => import("./components/HomeComponent/HomePageComponent"));
+const HeaderComponent = lazy(() => import("./components/HeaderComponent/HeaderComponent"));
+const FooterComponent = lazy(() => import("./components/FooterComponent/FooterComponent"));
+const AllEventList = lazy(() => import("./components/EventListComponent/AllEventList"));
+const OurEventComponent = lazy(() => import("./components/OurEventComponent/OurEvent"));
+const CreateNewEvent = lazy(() => import("./components/NewEventComponent/NewEventCreate"));
+const EditEvent = lazy(() => import("./components/EditComponent/EditEvent"));
+const Registration = lazy(() => import("./components/RegistrationComponent/Registration"));
 
 function App() {
   return (
     <>
-      <Routes>
-        <Route path="/" element={<SignUp />} />
-        <Route path="/signIn" element={<SignIn />} />
-        <Route path="/homePage" element={<HomePage />} />
-        <Route path="/header" element={<HeaderComponent />} />
-        <Route path="/footer" element={<FooterComponent />} />
-        <Route path="/eventList" element={<AllEventList />} />
-        <Route path="/ourEvent" element={<OurEventComponent />} />
-        <Route path="/newEvent" element={<CreateNewEvent />} />
-        <Route path="/editEvent" element={<EditEvent />} />
-        <Route path="/registrationForm" element={<Registration/>}/>
-      </Routes>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Routes>
+          <Route path="/" element={<SignUp />} />
+          <Route path="/signIn" element={<SignIn />} />
+          <Route path="/homePage" element={<HomePage />} />
+          <Route path="/header" element={<HeaderComponent />} />
+          <Route path="/footer" element={<FooterComponent />} />
+          <Route path="/eventList" element={<AllEventList />} />
+          <Route path="/ourEvent" element={<OurEventComponent />} />
+          <Route path="/newEvent" element={<CreateNewEvent />} />
+          <Route path="/editEvent" element={<EditEvent />} />
+          <Route path="/registrationForm" element={<Registration />} />
+        </Routes>
+      </Suspense>
     </>
   );
 }

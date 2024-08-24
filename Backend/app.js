@@ -1,11 +1,11 @@
-import mongoose from "mongoose";
-import express from "express";
-import dotenv from 'dotenv';
 import bodyParser from "body-parser";
-import { userRouter } from "./router/User.Router.js";
-import { eventRouter } from "./router/Event.Router.js";
-import { userEventDetailsRouter } from "./router/UserEventDetails.Router.js";
 import cors from 'cors';
+import dotenv from 'dotenv';
+import express from "express";
+import mongoose from "mongoose";
+import { eventRouter } from "./router/Event.Router.js";
+import { userRouter } from "./router/User.Router.js";
+import { userEventDetailsRouter } from "./router/UserEventDetails.Router.js";
 
 
 

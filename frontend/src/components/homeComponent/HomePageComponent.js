@@ -1,13 +1,12 @@
-import AllEventList from "../EventListComponent/AllEventList";
-import FooterComponent from "../FooterComponent/FooterComponent";
-import HeaderComponent from "../HeaderComponent/HeaderComponent";
+import React, { lazy, Suspense } from "react";
 
-export default function HomePage(){
-    return(
-        <>
-            <HeaderComponent/>
-            <AllEventList/>
-            <FooterComponent/>
-        </>
-    )
+// Lazy load the AllEventList component
+const AllEventList = lazy(() => import("../EventListComponent/AllEventList"));
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AllEventList />
+    </Suspense>
+  );
 }
