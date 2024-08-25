@@ -261,14 +261,16 @@ Event Management Team`,
 // CHECK EVENT COMPLETE OR NOT
 export const checkEventComplete = async (req, res, next) => {
   try {
-    console.log("I am call");
     const { _id } = req.body; // Extract event ID from the request body
+    console.log("I am call", _id);
     const eventDetails = await UserEventDetailsModel.find({
       eventId: _id,
     }).populate("eventId"); // Fetch event details from the database
 
+    console.log(eventDetails);
+
     if (!eventDetails || eventDetails.length === 0) {
-      return res.status(404).json({ msg: "Event not found" });
+      return res.status(203).json({ msg: "No user found for this event" });
     }
 
 

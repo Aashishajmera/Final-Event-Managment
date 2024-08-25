@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import { eventRouter } from "./router/Event.Router.js";
 import { userRouter } from "./router/User.Router.js";
 import { userEventDetailsRouter } from "./router/UserEventDetails.Router.js";
+import { feedbackRouter } from "./router/Feedback.Router.js";
 
 
 
@@ -31,6 +32,9 @@ mongoose.connect(process.env.DATABASE_URL).then(() => {
 
     // USER REGISTER FOR EVENT
     app.use(process.env.USER_REGISTRAION_API, userEventDetailsRouter);
+
+    // USER FEEDBACK
+    app.use(process.env.FEEDBACK, feedbackRouter);
 
     app.listen(process.env.PORT_NUMBER, () => {
         console.log('server created...');

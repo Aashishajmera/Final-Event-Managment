@@ -37,21 +37,22 @@ export default function Registration() {
   console.log(userId);
 
   // Validation functions
-  const validateUsername = (value) => {
-    if (!value) {
-      setUsernameErr("Username is required");
-      return false;
-    } else if (!/^[a-zA-Z]+$/.test(value)) {
-      setUsernameErr("Username can contain only alphabet characters");
-      return false;
-    } else if (value.length < 5 || value.length > 50) {
-      setUsernameErr("Username must be between 5-50 characters long");
-      return false;
-    } else {
-      setUsernameErr("");
-      return true;
-    }
-  };
+const validateUsername = (value) => {
+  if (!value) {
+    setUsernameErr("Username is required");
+    return false;
+  } else if (!/^[a-zA-Z\s]+$/.test(value)) {
+    setUsernameErr("Username can contain only alphabet characters and spaces");
+    return false;
+  } else if (value.length < 5 || value.length > 50) {
+    setUsernameErr("Username must be between 5-50 characters long");
+    return false;
+  } else {
+    setUsernameErr("");
+    return true;
+  }
+};
+
 
   const validateEmail = (value) => {
     if (!value) {

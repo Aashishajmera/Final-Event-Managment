@@ -14,7 +14,7 @@ const HeaderComponent = lazy(() =>
 
 export default function OurEventComponent() {
   // URL LINK OF OUREVENT
-//   const ourEventURL = process.env.REACT_APP_OUREVENT_URL;
+  //   const ourEventURL = process.env.REACT_APP_OUREVENT_URL;
   const deleteEventURL = process.env.REACT_APP_DELETEEVENT_URL;
 
   const [events, setEvents] = useState([]);
@@ -28,11 +28,45 @@ export default function OurEventComponent() {
     navigate("/newEvent");
   }
 
+  //   for see feedback
+  const seeFeedback = async (_id) => {
+    try {
+      console.log("i am feedback id", _id);
+      const response = await axios.post(
+        "http://localhost:3000/event/checkEventComplete",
+        { _id }
+      );
+
+      if (response.status === 201) {
+        // Show SweetAlert message for status code 201
+        Swal.fire({
+          icon: "info",
+          title: "Event Not Complete",
+          text: "The event is not complete yet. You are not able to give feedback at this moment.",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#3085d6",
+        });
+      } else if (response.status === 203) {
+        Swal.fire({
+          icon: "info",
+          title: "No Registrations",
+          text: "You can't see feedback right now because there are no registrations for this event.",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#3085d6",
+        });
+      } else {
+        navigate("/seeFeedback", { state: { _id } });
+      }
+    } catch (error) {
+      console.log("Error occurred while checking event completion:", error);
+    }
+  };
+
   // function for working work
   const workingFun = () => {
-     Swal.fire({
+    Swal.fire({
       title: "Work in Progress",
-      text: 'We are currently working on this. Please check back later.',
+      text: "We are currently working on this. Please check back later.",
       icon: "info",
       allowOutsideClick: false,
       allowEscapeKey: false,
@@ -44,9 +78,8 @@ export default function OurEventComponent() {
     });
 
     setTimeout(() => {
-        Swal.close();
+      Swal.close();
     }, 1000);
-     
   };
 
   // Function to delete an event
@@ -126,7 +159,9 @@ export default function OurEventComponent() {
 
     const fetchEvents = async () => {
       try {
-        const response = await axios.post(process.env.REACT_APP_OUREVENT_URL, { userId });
+        const response = await axios.post(process.env.REACT_APP_OUREVENT_URL, {
+          userId,
+        });
         if (!response.data.allEvents || response.data.allEvents.length === 0) {
           Swal.fire({
             icon: "info",
@@ -144,7 +179,7 @@ export default function OurEventComponent() {
       }
     };
     fetchEvents();
-  },[]);
+  }, []);
 
   const formatDate = (isoDate) => {
     if (!isoDate) return "N/A";
@@ -262,7 +297,11 @@ export default function OurEventComponent() {
                     </button>
                   </td>
                   <td>
-                    <button className="btn btn-success btn-sm ps-2 pe-2">
+                    <button
+                      onClick={() => {
+                        seeFeedback(event._id);
+                      }}
+                      className="btn btn-success btn-sm ps-2 pe-2">
                       Feedback
                     </button>
                   </td>

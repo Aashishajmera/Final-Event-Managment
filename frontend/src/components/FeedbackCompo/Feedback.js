@@ -1,5 +1,6 @@
+import axios from "axios";
 import React, { lazy, Suspense, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 // Lazy load the components
@@ -17,6 +18,10 @@ export default function Feedback() {
   const [feedback, setFeedback] = useState("");
   const [feedbackErr, setFeedbackErr] = useState("");
   const navigate = useNavigate();
+
+  // fot getting the event id
+
+  const eventId = useLocation().state._id;
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -51,22 +56,42 @@ export default function Feedback() {
       },
     });
 
-    // Simulate feedback submission (replace with actual submission logic)
+    // get the user id in session storage
+    const userObj = sessionStorage.getItem("user");
+    const userId = JSON.parse(userObj)._id;
+
+    console.log("i am event id", eventId);
+    console.log("i am user id", userId);
+
+    // get current date and time
+    const date = new Date();
+    // Get ISO string format of the current date and time
+    const isoString = date.toISOString(); // Example: 2024-08-24T12:33:45.123Z
+    // Append '11' to the end of the string
+    const dateTime = isoString + "11";
+
     try {
-      // Replace this with your actual submission logic
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate network delay
+      const response = await axios.post("http://localhost:3000/feedback/createfeedback", {
+        userId,
+        eventId,
+        dateTime,
+        review: feedback,
+      }); // Simulate network delay
+      if (response.status === 201) {
+        Swal.close(); // Close the loading message
 
-      Swal.close(); // Close the loading message
+        // Show success message
+        await Swal.fire({
+          icon: "success",
+          title: "Feedback Submitted",
+          text: "Thank you for your feedback!",
+        });
 
-      // Show success message
-      await Swal.fire({
-        icon: "success",
-        title: "Feedback Submitted",
-        text: "Thank you for your feedback!",
-      });
+        navigate('/homePage')
 
-      // Clear feedback input field after submission (optional)
-      setFeedback("");
+        // Clear feedback input field after submission (optional)
+        setFeedback("");
+      }
     } catch (error) {
       // Handle submission error
       Swal.close(); // Close the loading message
@@ -105,18 +130,20 @@ export default function Feedback() {
           </div>
           <div className="">
             <button
-              style={{ backgroundColor: 'rgb(0, 156, 167)', color: 'white', fontSize: '16px' }}
+              style={{
+                backgroundColor: "rgb(0, 156, 167)",
+                color: "white",
+                fontSize: "16px",
+              }}
               type="submit"
-              className="btn"
-            >
+              className="btn">
               Submit
             </button>
             <button
               type="button"
               onClick={() => navigate(-1)}
               className="btn btn-outline-secondary ms-2 ps-4 pe-4"
-              style={{ fontSize: '16px' }}
-            >
+              style={{ fontSize: "16px" }}>
               Back
             </button>
           </div>
